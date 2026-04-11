@@ -114,19 +114,12 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     });
 
     // Listen to Dogs (Customers)
-    const unsubscribeDogs = onSnapshot(collection(db, 'dogs'), async (snapshot) => {
-      if (snapshot.empty) {
-        // Auto-seed initial dogs if db is completely empty just so UI doesn't break
-        for (const dog of initialDogs) {
-          await setDoc(doc(db, 'dogs', dog.id), dog);
-        }
-      } else {
-        const liveDogs: Dog[] = [];
-        snapshot.docs.forEach(doc => {
-          liveDogs.push({ id: doc.id, ...doc.data() } as Dog);
-        });
-        set({ dogs: liveDogs });
-      }
+    const unsubscribeDogs = onSnapshot(collection(db, 'dogs'), (snapshot) => {
+      const liveDogs: Dog[] = [];
+      snapshot.docs.forEach(doc => {
+        liveDogs.push({ id: doc.id, ...doc.data() } as Dog);
+      });
+      set({ dogs: liveDogs });
     });
 
     set({ isInitialized: true });
