@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info, Plus } from 'lucide-react';
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminView() {
@@ -21,6 +21,29 @@ export default function AdminView() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isAddDogOpen, setIsAddDogOpen] = useState(false);
+  const [newDogName, setNewDogName] = useState("");
+  const [newDogOwner, setNewDogOwner] = useState("");
+  const [newDogPhone, setNewDogPhone] = useState("");
+
+  const handleAddNewDog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDogName || !newDogOwner) return;
+    const colors = ['bg-blue-500', 'bg-rose-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-500', 'bg-fuchsia-500', 'bg-indigo-500'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    await useScheduleStore.getState().addDog({
+      name: newDogName,
+      owner: newDogOwner,
+      phone: newDogPhone,
+      avatarColor: color
+    });
+    
+    setNewDogName("");
+    setNewDogOwner("");
+    setNewDogPhone("");
+    setIsAddDogOpen(false);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -62,9 +85,14 @@ export default function AdminView() {
               <p className="text-sm font-semibold text-zinc-500 tracking-wide uppercase mt-1">Week of {format(monday, 'MMMM do, yyyy')}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={signOut} title="Sign Out" className="hover:bg-red-50 hover:text-red-600 transition-colors">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="default" size="sm" onClick={() => setIsAddDogOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-full">
+               <Plus className="w-4 h-4" /> Add Customer
+            </Button>
+            <Button variant="ghost" size="icon" onClick={signOut} title="Sign Out" className="hover:bg-red-50 hover:text-red-600 transition-colors">
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -313,6 +341,74 @@ export default function AdminView() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* Add Customer Drawer */}
+      <Drawer open={isAddDogOpen} onOpenChange={setIsAddDogOpen}>
+        <DrawerContent className="max-h-[90vh] bg-white rounded-t-[32px]">
+          <div className="max-w-md w-full mx-auto pb-4">
+            <DrawerHeader className="pt-8 pb-4 px-6 relative">
+              <div className="w-12 h-1.5 bg-zinc-200 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
+              <DrawerTitle className="text-2xl font-black tracking-tight text-zinc-900">Add New Customer</DrawerTitle>
+              <DrawerDescription className="text-sm font-medium text-zinc-500">
+                Their dog will be immediately available for scheduling in the public portal. 
+              </DrawerDescription>
+            </DrawerHeader>
+            <form onSubmit={handleAddNewDog} className="px-6 py-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-zinc-700">Dog's Name</label>
+                <input 
+                  type="text" 
+                  autoFocus
+                  required
+                  value={newDogName}
+                  onChange={(e) => setNewDogName(e.target.value)}
+                  placeholder="e.g. Buster" 
+                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-zinc-700">Owner's First Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newDogOwner}
+                  onChange={(e) => setNewDogOwner(e.target.value)}
+                  placeholder="e.g. Sarah" 
+                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-zinc-700">Owner's Phone Number <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                <input 
+                  type="tel" 
+                  value={newDogPhone}
+                  onChange={(e) => setNewDogPhone(e.target.value)}
+                  placeholder="+14045551234" 
+                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                />
+                <p className="text-[11px] text-zinc-500 font-medium">Used for Twilio SMS notifications when you approve a request.</p>
+              </div>
+              
+              <DrawerFooter className="px-0 pt-6 pb-2">
+                <Button type="submit" className="h-12 text-lg font-bold rounded-2xl bg-indigo-600 hover:bg-indigo-700">Save Customer</Button>
+                <DrawerClose asChild>
+                  <Button type="button" variant="ghost" className="h-12 font-bold text-zinc-500 rounded-2xl hover:bg-zinc-100 mt-2">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </form>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
     </div>
   );
 }

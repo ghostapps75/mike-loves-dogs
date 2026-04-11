@@ -11,11 +11,12 @@ const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export async function POST(request: Request) {
   try {
-    const { dogName, blockLabel, date } = await request.json();
+    const { dogName, blockLabel, date, customerPhone } = await request.json();
 
-    // In a full production app, you would fetch the customer's phone number from your database here.
-    // For now, we will reroute it to the admin number so Mike gets physical proof it works!
-    const customerRouteNumber = adminNumber; 
+    // Use the actual customer's phone if provided, but fallback to the admin's phone.
+    // NOTE: Twilio free trials will fail if customerPhone is unverified. 
+    // If you haven't verified it in Twilio, the SMS will be blocked!
+    const customerRouteNumber = customerPhone || adminNumber; 
 
     if (!client || !twilioNumber || !customerRouteNumber) {
       console.log('Twilio is technically disabled due to missing Environment Variables', { dogName, blockLabel });

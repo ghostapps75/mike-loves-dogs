@@ -7,6 +7,7 @@ export type Dog = {
   name: string;
   owner: string;
   avatarColor: string;
+  phone?: string;
 };
 
 export type BlockStatus = 'Not Started' | 'In Progress' | 'Done';
@@ -52,6 +53,7 @@ interface ScheduleState {
   updateBlockStatus: (date: string, blockId: string, status: BlockStatus) => Promise<void>;
   requestBooking: (date: string, blockId: string, dogId: string) => Promise<void>;
   updateBookingStatus: (id: string, booking: BookingRequest, status: BookingStatus) => Promise<void>;
+  addDog: (dog: Omit<Dog, 'id'>) => Promise<void>;
 }
 
 const initialDogs: Dog[] = [
@@ -111,6 +113,22 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       set({ bookings: liveBookings });
     });
 
+    // Listen to Dogs (Customers)
+    const unsubscribeDogs = onSnapshot(collection(db, 'dogs'), async (snapshot) => {
+      if (snapshot.empty) {
+        // Auto-seed initial dogs if db is completely empty just so UI doesn't break
+        for (const dog of initialDogs) {
+          await setDoc(doc(db, 'dogs', dog.id), dog);
+        }
+      } else {
+        const liveDogs: Dog[] = [];
+        snapshot.docs.forEach(doc => {
+          liveDogs.push({ id: doc.id, ...doc.data() } as Dog);
+        });
+        set({ dogs: liveDogs });
+      }
+    });
+
     set({ isInitialized: true });
   },
 
@@ -160,10 +178,14 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
         fetch('/api/notify-customer', {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ dogName: dog.name, blockLabel, date })
+           body: JSON.stringify({ dogName: dog.name, blockLabel, date, customerPhone: dog.phone })
         }).catch(err => console.error("Webhook failed:", err));
       }
     }
+  },
+
+  addDog: async (dogData) => {
+    await addDoc(collection(db, 'dogs'), dogData);
   },
 
   assignDogToBlock: async (date, blockId, dogId) => {
