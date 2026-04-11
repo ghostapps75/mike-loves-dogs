@@ -209,7 +209,7 @@ export default function AdminView() {
                     {/* Top Decorative Line */}
                     <div className={`absolute top-0 left-8 right-8 h-[4px] rounded-b-xl transition-colors ${isFull ? 'bg-red-400' : 'bg-transparent group-hover:bg-zinc-900/10'}`} />
 
-                    <div className="flex justify-between items-start w-full mb-6">
+                    <div className="flex flex-col items-start gap-4 w-full mb-6">
                        {/* Condensed Capacity Bar */}
                        <div className="flex gap-1">
                           {Array.from({ length: MAX_DOGS_PER_BLOCK }).map((_, idx) => (
@@ -220,15 +220,13 @@ export default function AdminView() {
                           ))}
                        </div>
                        
-                       <Button 
-                         variant="outline" 
-                         size="sm" 
-                         className={`h-8 px-3 ml-2 gap-1.5 rounded-full font-bold transition-colors border shadow-sm ${statusBg}`}
+                       <button 
+                         className={`flex items-center h-6 px-2.5 gap-1.5 rounded-md font-bold transition-all border shadow-sm ${statusBg} text-zinc-700 active:scale-95 relative z-10`}
                          onClick={(e) => handleStatusCycle(e, ds, block.id, scheduledBlock.status)}
                        >
                          <StatusIcon className={`w-3.5 h-3.5 ${statusColor} ${scheduledBlock.status === "In Progress" ? "animate-spin-slow" : ""}`} />
-                         <span className="text-xs">{scheduledBlock.status}</span>
-                       </Button>
+                         <span className="text-[11px] uppercase tracking-wider">{scheduledBlock.status}</span>
+                       </button>
                     </div>
 
                     <div className="flex-1 w-full">
