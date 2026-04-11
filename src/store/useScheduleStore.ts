@@ -121,6 +121,18 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       dogId,
       status: 'pending'
     });
+    
+    // Stealth Ping Twilio Webhook (Fire and forget so UI doesn't block)
+    const store = get();
+    const dog = store.dogs.find(d => d.id === dogId);
+    const blockLabel = store.timeBlocks.find(b => b.id === blockId)?.label;
+    if (dog) {
+      fetch('/api/notify-mike', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dogName: dog.name, ownerName: dog.owner, blockLabel, date })
+      }).catch(err => console.error("Webhook failed:", err));
+    }
   },
 
   updateBookingStatus: async (id, booking, status) => {
@@ -138,6 +150,18 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
         await updateDoc(doc(db, 'schedules', date), {
           [`blocks.${blockId}`]: block
         });
+      }
+      
+      // Stealth Ping Twilio Webhook for Customer (Fire and forget)
+      const store = get();
+      const dog = store.dogs.find(d => d.id === dogId);
+      const blockLabel = store.timeBlocks.find(b => b.id === blockId)?.label;
+      if (dog) {
+        fetch('/api/notify-customer', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ dogName: dog.name, blockLabel, date })
+        }).catch(err => console.error("Webhook failed:", err));
       }
     }
   },
