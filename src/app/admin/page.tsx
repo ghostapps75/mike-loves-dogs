@@ -53,10 +53,24 @@ export default function AdminView() {
 
   const pendingBookings = bookings.filter(b => b.status === 'pending');
 
-  const handleDogToggle = (dogId: string, isAssigned: boolean) => {
+  const handleDogToggle = async (dogId: string, isAssigned: boolean) => {
     if (!selectedBlock || !selectedDate) return;
     if (isAssigned) {
-      removeDogFromBlock(selectedDate, selectedBlock, dogId);
+      const confirmCancel = window.confirm("Are you sure you want to cancel this dog's walk? Doing so will instantly text the owner.");
+      if (confirmCancel) {
+        await removeDogFromBlock(selectedDate, selectedBlock, dogId);
+        
+        // Stealth Ping Twilio Cancellation
+        const dog = dogs.find(d => d.id === dogId);
+        const blockLabel = timeBlocks.find(b => b.id === selectedBlock)?.label;
+        if (dog) {
+          fetch('/api/notify-cancellation', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ dogName: dog.name, blockLabel, date: selectedDate, customerPhone: dog.phone })
+          }).catch(err => console.error("Webhook failed:", err));
+        }
+      }
     } else {
       assignDogToBlock(selectedDate, selectedBlock, dogId);
     }
@@ -411,9 +425,10 @@ export default function AdminView() {
                      />
                    </div>
                    <div className="flex flex-col gap-1.5">
-                     <label className="text-sm font-bold text-zinc-700">Owner's Phone Number <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                     <label className="text-sm font-bold text-zinc-700">Owner's Phone Number</label>
                      <input 
                        type="tel" 
+                       required
                        value={newDogPhone}
                        onChange={(e) => setNewDogPhone(e.target.value)}
                        placeholder="+14045551234" 
