@@ -185,11 +185,20 @@ export default function AdminView() {
                 }
 
                 return (
-                  <button
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                         setSelectedDate(ds);
                         setSelectedBlock(block.id);
                         setIsDrawerOpen(true);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          setSelectedDate(ds);
+                          setSelectedBlock(block.id);
+                          setIsDrawerOpen(true);
+                        }
                     }}
                     key={`${ds}-${block.id}`}
                     className={`relative flex flex-col border-2 rounded-[28px] p-6 text-left transition-all duration-300 min-h-[160px] cursor-pointer
@@ -249,7 +258,7 @@ export default function AdminView() {
                        </span>
                     </div>
 
-                  </button>
+                    </div>
                 );
               })}
             </div>
