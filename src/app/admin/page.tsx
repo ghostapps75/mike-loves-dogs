@@ -123,7 +123,7 @@ export default function AdminView() {
       )}
 
       <main className="flex-1 overflow-x-auto px-4 sm:px-8 py-8 w-full max-w-[1600px] mx-auto hide-scrollbar">
-        <div className="grid grid-cols-[max-content_repeat(5,minmax(280px,1fr))] gap-6 min-w-max pb-8">
+        <div className="grid grid-cols-[max-content_repeat(5,minmax(200px,1fr))] gap-4 sm:gap-6 pb-8 min-w-[1000px]">
           {/* Header Row */}
           <div className="pt-2"></div>
           {weekDays.map(day => {
