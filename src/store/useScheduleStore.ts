@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '@/lib/firebase';
-import { collection, doc, onSnapshot, setDoc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, updateDoc, addDoc, getDoc, deleteDoc } from 'firebase/firestore';
 
 export type Dog = {
   id: string;
@@ -54,6 +54,7 @@ interface ScheduleState {
   requestBooking: (date: string, blockId: string, dogId: string) => Promise<void>;
   updateBookingStatus: (id: string, booking: BookingRequest, status: BookingStatus) => Promise<void>;
   addDog: (dog: Omit<Dog, 'id'>) => Promise<void>;
+  deleteDog: (dogId: string) => Promise<void>;
 }
 
 const initialDogs: Dog[] = [
@@ -179,6 +180,10 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
 
   addDog: async (dogData) => {
     await addDoc(collection(db, 'dogs'), dogData);
+  },
+
+  deleteDog: async (dogId) => {
+    await deleteDoc(doc(db, 'dogs', dogId));
   },
 
   assignDogToBlock: async (date, blockId, dogId) => {

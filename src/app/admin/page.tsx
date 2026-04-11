@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info, Plus } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info, Plus, Users, Trash2 } from 'lucide-react';
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminView() {
   const [mounted, setMounted] = useState(false);
   const { signOut } = useAuth();
-  const { schedules, timeBlocks, dogs, bookings, updateBookingStatus, assignDogToBlock, removeDogFromBlock, updateBlockStatus } = useScheduleStore();
+  const { schedules, timeBlocks, dogs, bookings, updateBookingStatus, assignDogToBlock, removeDogFromBlock, updateBlockStatus, deleteDog } = useScheduleStore();
   
   const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 5 }).map((_, i) => addDays(monday, i));
@@ -87,7 +87,7 @@ export default function AdminView() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="default" size="sm" onClick={() => setIsAddDogOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-full">
-               <Plus className="w-4 h-4" /> Add Customer
+               <Users className="w-4 h-4" /> Manage Customers
             </Button>
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign Out" className="hover:bg-red-50 hover:text-red-600 transition-colors">
               <LogOut className="w-5 h-5" />
@@ -342,60 +342,88 @@ export default function AdminView() {
         </DrawerContent>
       </Drawer>
 
-      {/* Add Customer Drawer */}
+      {/* Manage Customers Drawer */}
       <Drawer open={isAddDogOpen} onOpenChange={setIsAddDogOpen}>
-        <DrawerContent className="max-h-[90vh] bg-white rounded-t-[32px]">
-          <div className="max-w-md w-full mx-auto pb-4">
-            <DrawerHeader className="pt-8 pb-4 px-6 relative">
+        <DrawerContent className="max-h-[90vh] bg-zinc-50 rounded-t-[32px]">
+          <div className="max-w-md w-full mx-auto pb-4 overflow-y-auto max-h-[85vh] hide-scrollbar">
+            <DrawerHeader className="pt-8 pb-4 px-6 relative bg-white border-b border-zinc-100 rounded-t-[32px]">
               <div className="w-12 h-1.5 bg-zinc-200 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
-              <DrawerTitle className="text-2xl font-black tracking-tight text-zinc-900">Add New Customer</DrawerTitle>
+              <DrawerTitle className="text-2xl font-black tracking-tight text-zinc-900">Manage Customers</DrawerTitle>
               <DrawerDescription className="text-sm font-medium text-zinc-500">
-                Their dog will be immediately available for scheduling in the public portal. 
+                Add new dogs to the roster or remove inactive ones.
               </DrawerDescription>
             </DrawerHeader>
-            <form onSubmit={handleAddNewDog} className="px-6 py-4 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-zinc-700">Dog's Name</label>
-                <input 
-                  type="text" 
-                  autoFocus
-                  required
-                  value={newDogName}
-                  onChange={(e) => setNewDogName(e.target.value)}
-                  placeholder="e.g. Buster" 
-                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
-                />
+            
+            <div className="p-6">
+              <h3 className="text-sm font-bold text-zinc-700 mb-3 uppercase tracking-wider">Current Roster ({dogs.length})</h3>
+              <div className="flex flex-col gap-2 mb-8">
+                 {dogs.length === 0 && (
+                    <div className="p-4 border-2 border-dashed border-zinc-200 rounded-2xl text-center">
+                       <span className="text-sm font-bold text-zinc-400">Roster is empty. Add a customer below!</span>
+                    </div>
+                 )}
+                 {dogs.map(dog => (
+                    <div key={dog.id} className="flex items-center justify-between p-3 bg-white border border-zinc-200 rounded-2xl shadow-sm">
+                       <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${dog.avatarColor}`}>
+                            {dog.name.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-zinc-900 leading-none mb-1">{dog.name}</span>
+                            <span className="text-xs font-semibold text-zinc-500">{dog.owner} {dog.phone ? `• ${dog.phone}` : ''}</span>
+                          </div>
+                       </div>
+                       <Button 
+                         variant="ghost" 
+                         size="icon"
+                         onClick={() => deleteDog(dog.id)}
+                         className="text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                    </div>
+                 ))}
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-zinc-700">Owner's First Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={newDogOwner}
-                  onChange={(e) => setNewDogOwner(e.target.value)}
-                  placeholder="e.g. Sarah" 
-                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
-                />
+
+              <div className="bg-white p-5 rounded-[24px] border border-zinc-200 shadow-sm">
+                 <h3 className="text-sm font-bold text-zinc-700 mb-4 uppercase tracking-wider">Add New Customer</h3>
+                 <form onSubmit={handleAddNewDog} className="flex flex-col gap-4">
+                   <div className="flex flex-col gap-1.5">
+                     <label className="text-sm font-bold text-zinc-700">Dog's Name</label>
+                     <input 
+                       type="text" 
+                       required
+                       value={newDogName}
+                       onChange={(e) => setNewDogName(e.target.value)}
+                       placeholder="e.g. Buster" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                     />
+                   </div>
+                   <div className="flex flex-col gap-1.5">
+                     <label className="text-sm font-bold text-zinc-700">Owner's First Name</label>
+                     <input 
+                       type="text" 
+                       required
+                       value={newDogOwner}
+                       onChange={(e) => setNewDogOwner(e.target.value)}
+                       placeholder="e.g. Sarah" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                     />
+                   </div>
+                   <div className="flex flex-col gap-1.5">
+                     <label className="text-sm font-bold text-zinc-700">Owner's Phone Number <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                     <input 
+                       type="tel" 
+                       value={newDogPhone}
+                       onChange={(e) => setNewDogPhone(e.target.value)}
+                       placeholder="+14045551234" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                     />
+                   </div>
+                   <Button type="submit" className="h-11 mt-2 text-base font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 w-full shadow-md">Add to Roster</Button>
+                 </form>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-zinc-700">Owner's Phone Number <span className="text-zinc-400 font-normal">(Optional)</span></label>
-                <input 
-                  type="tel" 
-                  value={newDogPhone}
-                  onChange={(e) => setNewDogPhone(e.target.value)}
-                  placeholder="+14045551234" 
-                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
-                />
-                <p className="text-[11px] text-zinc-500 font-medium">Used for Twilio SMS notifications when you approve a request.</p>
-              </div>
-              
-              <DrawerFooter className="px-0 pt-6 pb-2">
-                <Button type="submit" className="h-12 text-lg font-bold rounded-2xl bg-indigo-600 hover:bg-indigo-700">Save Customer</Button>
-                <DrawerClose asChild>
-                  <Button type="button" variant="ghost" className="h-12 font-bold text-zinc-500 rounded-2xl hover:bg-zinc-100 mt-2">Cancel</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </form>
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
