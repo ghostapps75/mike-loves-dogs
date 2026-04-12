@@ -1,5 +1,5 @@
 "use client";
-import { format, startOfWeek, addDays, getDay } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { useScheduleStore, BlockStatus, Dog, MAX_DOGS_PER_BLOCK } from "@/store/useScheduleStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info, Plus, Users, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CircleDashed, Orbit, AlertCircle, X, Check, LogOut, Info, Users, Trash2, BookUser } from 'lucide-react';
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminView() {
@@ -45,8 +45,36 @@ export default function AdminView() {
     setIsAddDogOpen(false);
   };
 
+  const handleImportContact = async () => {
+    if (!('contacts' in navigator && 'ContactsManager' in window)) {
+      alert("Device not supported. The Native Contacts API is typically only available on mobile iOS/Android PWAs.");
+      return;
+    }
+    try {
+      const props = ['name', 'tel'];
+      const opts = { multiple: false };
+      // @ts-ignore
+      const contacts = await navigator.contacts.select(props, opts);
+      if (contacts && contacts.length > 0) {
+        const contact = contacts[0];
+        if (contact.name && contact.name.length > 0) {
+          setNewDogOwner(contact.name[0]);
+        }
+        if (contact.tel && contact.tel.length > 0) {
+          let phone = contact.tel[0];
+          setNewDogPhone(phone);
+        }
+      }
+    } catch (ex) {
+      console.error(ex);
+    }
+  };
+
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) return <div className="min-h-screen bg-muted/20"></div>;
@@ -228,8 +256,6 @@ export default function AdminView() {
 
                 return (
                   <div
-                    role="button"
-                    tabIndex={0}
                     onClick={() => {
                         setSelectedDate(ds);
                         setSelectedBlock(block.id);
@@ -400,10 +426,20 @@ export default function AdminView() {
               </div>
 
               <div className="bg-white p-5 rounded-[24px] border border-zinc-200 shadow-sm">
-                 <h3 className="text-sm font-bold text-zinc-700 mb-4 uppercase tracking-wider">Add New Customer</h3>
+                 <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-zinc-700 uppercase tracking-wider">Add New Customer</h3>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleImportContact}
+                      className="h-8 shadow-sm gap-2 px-3 border-indigo-200 text-xs font-bold text-indigo-700 rounded-lg hover:bg-indigo-50 bg-indigo-50/50"
+                    >
+                      <BookUser className="w-3.5 h-3.5" /> Import Details
+                    </Button>
+                 </div>
                  <form onSubmit={handleAddNewDog} className="flex flex-col gap-4">
                    <div className="flex flex-col gap-1.5">
-                     <label className="text-sm font-bold text-zinc-700">Dog's Name</label>
+                     <label className="text-sm font-bold text-zinc-700">Dog&apos;s Name</label>
                      <input 
                        type="text" 
                        required
@@ -414,7 +450,7 @@ export default function AdminView() {
                      />
                    </div>
                    <div className="flex flex-col gap-1.5">
-                     <label className="text-sm font-bold text-zinc-700">Owner's First Name</label>
+                     <label className="text-sm font-bold text-zinc-700">Owner&apos;s First Name</label>
                      <input 
                        type="text" 
                        required
@@ -425,7 +461,7 @@ export default function AdminView() {
                      />
                    </div>
                    <div className="flex flex-col gap-1.5">
-                     <label className="text-sm font-bold text-zinc-700">Owner's Phone Number</label>
+                     <label className="text-sm font-bold text-zinc-700">Owner&apos;s Phone Number</label>
                      <input 
                        type="tel" 
                        required
