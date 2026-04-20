@@ -115,7 +115,7 @@ export default function AdminView() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FBFBFC] w-full">
+    <div className="flex flex-col min-h-screen bg-background w-full">
       <header className="flex flex-col gap-4 py-4 px-4 sm:px-8 bg-white shadow-sm z-10 sticky top-0 relative">
         <div className="flex items-center justify-between w-full max-w-[1600px] mx-auto">
           <div className="flex items-center gap-4">
@@ -123,12 +123,12 @@ export default function AdminView() {
               <ArrowLeft className="w-5 h-5"/>
             </Link>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-zinc-900">Admin Editor</h1>
+              <h1 className="text-2xl font-serif font-bold tracking-tight text-primary">Admin Editor</h1>
               <p className="text-sm font-semibold text-zinc-500 tracking-wide uppercase mt-1">Week of {format(monday, 'MMMM do, yyyy')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="default" size="sm" onClick={() => setIsAddDogOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-full">
+            <Button variant="default" size="sm" onClick={() => setIsAddDogOpen(true)} className="gap-2 bg-primary hover:bg-primary/90 font-bold rounded-full">
                <Users className="w-4 h-4" /> Manage Customers
             </Button>
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign Out" className="hover:bg-red-50 hover:text-red-600 transition-colors">
@@ -201,13 +201,13 @@ export default function AdminView() {
              const isToday = ds === format(new Date(), "yyyy-MM-dd");
              return (
               <div key={ds} className="flex flex-col mb-4">
-                <span className={`text-sm font-bold uppercase tracking-wider mb-1 ${isToday ? 'text-indigo-600' : 'text-zinc-500'}`}>
+                <span className={`text-sm font-bold uppercase tracking-wider mb-1 ${isToday ? 'text-primary' : 'text-zinc-500'}`}>
                   {format(day, 'EEEE')}
                 </span>
-                <span className="text-3xl font-black tracking-tight text-zinc-900">
+                <span className="text-3xl font-serif font-bold tracking-tight text-foreground">
                   {format(day, 'MMM do')}
                 </span>
-                {isToday && <div className="h-1 w-8 bg-indigo-600 rounded-full mt-2" />}
+                {isToday && <div className="h-1 w-8 bg-primary rounded-full mt-2" />}
               </div>
              )
           })}
@@ -217,7 +217,7 @@ export default function AdminView() {
             <div className="contents group" key={block.id}>
               {/* Row Label (Y-axis) */}
               <div className="flex flex-col justify-center pr-6 sticky left-0 bg-[#FBFBFC] z-0">
-                 <h3 className="font-bold text-lg text-zinc-900 whitespace-nowrap">{block.label}</h3>
+                 <h3 className="font-serif font-bold text-lg text-foreground whitespace-nowrap">{block.label}</h3>
                  <p className="text-sm font-medium text-zinc-500 whitespace-nowrap">{block.timeRange}</p>
                  <span className="text-xs font-semibold text-zinc-400 mt-1 whitespace-nowrap flex items-center gap-1">
                    <Info className="w-3 h-3" /> Max {MAX_DOGS_PER_BLOCK} dogs
@@ -337,7 +337,7 @@ export default function AdminView() {
         <DrawerContent className="max-h-[90vh]">
           <div className="max-w-md w-full mx-auto">
             <DrawerHeader className="pt-6">
-              <DrawerTitle className="text-2xl font-bold">Assign Dogs</DrawerTitle>
+              <DrawerTitle className="text-2xl font-serif font-bold text-primary">Assign Dogs</DrawerTitle>
               <DrawerDescription className="text-base font-medium">
                 {selectedDate && selectedBlock && (
                    <>
@@ -353,12 +353,12 @@ export default function AdminView() {
                  return (
                    <label 
                      key={dog.id} 
-                     className={`flex items-center space-x-3 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none active:scale-[0.98] ${isAssigned ? 'border-indigo-500 bg-indigo-50/50' : 'border-zinc-200 hover:bg-zinc-50'}`}
+                     className={`flex items-center space-x-3 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none active:scale-[0.98] ${isAssigned ? 'border-primary bg-primary/10' : 'border-zinc-200 hover:bg-zinc-50'}`}
                    >
                      <Checkbox 
                        checked={isAssigned} 
                        onCheckedChange={() => handleDogToggle(dog.id, isAssigned)} 
-                       className="w-6 h-6 rounded-md data-[state=checked]:bg-indigo-500 pointer-events-none"
+                       className="w-6 h-6 rounded-md data-[state=checked]:bg-primary pointer-events-none"
                      />
                      <div className="flex items-center gap-4 flex-1 ml-2">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm border border-white/20 ${dog.avatarColor}`}>
@@ -388,7 +388,7 @@ export default function AdminView() {
           <div className="max-w-md w-full mx-auto pb-4 overflow-y-auto max-h-[85vh] hide-scrollbar">
             <DrawerHeader className="pt-8 pb-4 px-6 relative bg-white border-b border-zinc-100 rounded-t-[32px]">
               <div className="w-12 h-1.5 bg-zinc-200 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
-              <DrawerTitle className="text-2xl font-black tracking-tight text-zinc-900">Manage Customers</DrawerTitle>
+              <DrawerTitle className="text-2xl font-serif font-bold tracking-tight text-primary">Manage Customers</DrawerTitle>
               <DrawerDescription className="text-sm font-medium text-zinc-500">
                 Add new dogs to the roster or remove inactive ones.
               </DrawerDescription>
@@ -432,7 +432,7 @@ export default function AdminView() {
                       type="button" 
                       variant="outline" 
                       onClick={handleImportContact}
-                      className="h-8 shadow-sm gap-2 px-3 border-indigo-200 text-xs font-bold text-indigo-700 rounded-lg hover:bg-indigo-50 bg-indigo-50/50"
+                      className="h-8 shadow-sm gap-2 px-3 border-primary/20 text-xs font-bold text-primary rounded-lg hover:bg-primary/10 bg-primary/5"
                     >
                       <BookUser className="w-3.5 h-3.5" /> Import Details
                     </Button>
@@ -446,7 +446,7 @@ export default function AdminView() {
                        value={newDogName}
                        onChange={(e) => setNewDogName(e.target.value)}
                        placeholder="e.g. Buster" 
-                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
                      />
                    </div>
                    <div className="flex flex-col gap-1.5">
@@ -457,7 +457,7 @@ export default function AdminView() {
                        value={newDogOwner}
                        onChange={(e) => setNewDogOwner(e.target.value)}
                        placeholder="e.g. Sarah" 
-                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
                      />
                    </div>
                    <div className="flex flex-col gap-1.5">
@@ -468,10 +468,10 @@ export default function AdminView() {
                        value={newDogPhone}
                        onChange={(e) => setNewDogPhone(e.target.value)}
                        placeholder="+14045551234" 
-                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                       className="flex h-11 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
                      />
                    </div>
-                   <Button type="submit" className="h-11 mt-2 text-base font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 w-full shadow-md">Add to Roster</Button>
+                   <Button type="submit" className="h-11 mt-2 text-base font-bold rounded-xl bg-primary hover:bg-primary/90 w-full shadow-md">Add to Roster</Button>
                  </form>
               </div>
             </div>

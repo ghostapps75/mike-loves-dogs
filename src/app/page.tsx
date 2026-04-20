@@ -1,241 +1,202 @@
 "use client";
-import { format, startOfWeek, addDays, parseISO } from "date-fns";
-import { useScheduleStore, MAX_DOGS_PER_BLOCK, Dog } from "@/store/useScheduleStore";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import Link from 'next/link';
-import React from 'react';
-import { Settings, CalendarClock, CheckCircle2 } from 'lucide-react';
 
-export default function ClientView() {
-  const [mounted, setMounted] = useState(false);
-  const { schedules, timeBlocks, dogs, bookings, requestBooking } = useScheduleStore();
-
-  const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 5 }).map((_, i) => addDays(monday, i));
-
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{date: string, blockId: string} | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!mounted) return <div className="min-h-screen bg-[#FDFDFD]"></div>;
-
-  const handleDogSelect = (dogId: string) => {
-    if (selectedSlot) {
-      requestBooking(selectedSlot.date, selectedSlot.blockId, dogId);
-      setIsDrawerOpen(false);
-      setSelectedSlot(null);
-    }
-  };
-
+export default function MarketingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#FBFBFC] text-zinc-900 font-sans w-full">
-      {/* Sleek Header */}
-      <header className="flex justify-between items-center px-8 py-6 bg-white border-b border-zinc-300 sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900">
-            Booking Schedule
-          </h1>
-          <p className="text-base font-semibold text-zinc-500 tracking-wide mt-1">{format(monday, "MMMM do")} - {format(weekDays[4], "do, yyyy")}</p>
+    <div className="flex flex-col min-h-screen font-sans bg-background w-full">
+      {/* Navigation */}
+      <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-2xl font-serif font-bold text-primary tracking-tight">
+              Mike Loves Dogs
+            </span>
+          </div>
+          <nav className="hidden md:flex space-x-8 text-sm font-bold text-foreground">
+            <Link href="#about" className="hover:text-primary transition-colors">ABOUT</Link>
+            <Link href="#services" className="hover:text-primary transition-colors">SERVICES</Link>
+            <Link href="#clients" className="hover:text-primary transition-colors">OUR CLIENTS</Link>
+            <Link href="#contact" className="hover:text-primary transition-colors">CONTACT</Link>
+          </nav>
+          <div className="flex items-center space-x-4">
+            <Link href="/app">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 rounded-lg transition-transform active:scale-95 shadow-md">
+                Client Portal
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Link href="/admin" className="p-4 bg-zinc-50 hover:bg-zinc-100 rounded-2xl shadow-sm hover:shadow active:scale-95 transition-all text-zinc-600 border border-zinc-200">
-           <Settings className="w-6 h-6" />
-        </Link>
       </header>
 
-      {/* Full Page Matrix Layout */}
-      <div className="flex-1 w-full overflow-x-auto p-6 lg:p-12 xl:p-16 custom-scrollbar">
-        <div className="min-w-[1000px] max-w-7xl mx-auto h-full grid grid-cols-[160px_repeat(5,1fr)] gap-x-6 gap-y-6">
-          
-          {/* Header Row (Days) */}
-          <div className="empty-corner" />
-          {weekDays.map(day => {
-            const ds = format(day, "yyyy-MM-dd");
-            const isToday = format(new Date(), "yyyy-MM-dd") === ds;
-            return (
-              <div key={ds} className={`pb-6 flex flex-col items-center justify-end ${isToday ? 'opacity-100' : 'opacity-80'}`}>
-                 <h2 className={`text-sm font-extrabold uppercase tracking-widest ${isToday ? 'text-indigo-600' : 'text-zinc-400'}`}>
-                   {format(day, "EEEE")}
-                 </h2>
-                 <p className={`text-[32px] font-black leading-none mt-2 ${isToday ? 'text-indigo-600' : 'text-zinc-800'}`}>
-                   {format(day, "d")}
-                 </p>
-                 {isToday && <div className="w-2 h-2 rounded-full bg-indigo-600 mt-3 shadow-md border border-indigo-200" />}
-              </div>
-            )
-          })}
-
-          {/* Body Rows (Time Blocks) */}
-          {timeBlocks.map(block => (
-            <React.Fragment key={block.id}>
-              {/* Y-Axis Label */}
-              <div className="pr-8 py-8 flex flex-col justify-center items-end text-right border-r-2 border-zinc-300">
-                 <h3 className="font-black text-zinc-800 text-xl leading-tight">{block.label}</h3>
-                 <p className="text-sm font-bold text-zinc-400 mt-1.5 uppercase tracking-wider">{block.timeRange}</p>
-              </div>
-
-              {/* The 5 Cells For This Block */}
-              {weekDays.map(day => {
-                const ds = format(day, "yyyy-MM-dd");
-                const schedule = schedules[ds] || { blocks: {} };
-                const scheduledBlock = schedule.blocks[block.id];
-                
-                const assignedDogIds = scheduledBlock?.dogIds || [];
-                const blockDogs = assignedDogIds.map(id => dogs.find(d => d.id === id)).filter(Boolean) as Dog[];
-                
-                const blockBookings = bookings.filter(b => b.date === ds && b.blockId === block.id);
-                const pendingBookings = blockBookings.filter(b => b.status === "pending");
-                
-                const spotsTaken = assignedDogIds.length;
-                const isFull = spotsTaken >= MAX_DOGS_PER_BLOCK;
-                const ratio = spotsTaken / MAX_DOGS_PER_BLOCK;
-                
-                const isDisabled = scheduledBlock?.status === "Done" || scheduledBlock?.status === "In Progress";
-                
-                const blockColorMap: Record<string, string> = {
-                  'morning': 'bg-orange-50/80 hover:bg-orange-100/80 border-orange-300 hover:border-orange-500 hover:shadow-[0_8px_30px_rgba(249,115,22,0.15)]',
-                  'midday': 'bg-cyan-50/80 hover:bg-cyan-100/80 border-cyan-300 hover:border-cyan-500 hover:shadow-[0_8px_30px_rgba(6,182,212,0.15)]',
-                  'afternoon': 'bg-violet-50/80 hover:bg-violet-100/80 border-violet-300 hover:border-violet-500 hover:shadow-[0_8px_30px_rgba(139,92,246,0.15)]',
-                };
-                const colorConfig = blockColorMap[block.id] || 'bg-white border-zinc-300 hover:border-indigo-400';
-                
-                return (
-                  <button
-                    disabled={isFull || isDisabled}
-                    onClick={() => {
-                        setSelectedSlot({ date: ds, blockId: block.id });
-                        setIsDrawerOpen(true);
-                    }}
-                    key={`${ds}-${block.id}`}
-                    className={`group relative flex flex-col border-2 rounded-[28px] p-6 text-left transition-all duration-300 min-h-[160px]
-                      ${isDisabled ? 'opacity-50 grayscale bg-zinc-100 border-zinc-300 cursor-not-allowed' : 
-                        isFull ? 'bg-red-50/50 border-red-300 cursor-not-allowed' : 
-                        `${colorConfig} hover:-translate-y-1 cursor-pointer`
-                      }`}
-                  >
-                    {/* Top Decorative Line */}
-                    <div className={`absolute top-0 left-8 right-8 h-[4px] rounded-b-xl transition-colors ${isFull ? 'bg-red-400' : 'bg-transparent group-hover:bg-zinc-900/10'}`} />
-
-                    <div className="flex justify-between items-center w-full mb-8">
-                      {/* Condensed Capacity Bar */}
-                      <div className="flex flex-col gap-2 w-full">
-                         <div className="flex justify-between items-end w-full">
-                            <span className="text-xs font-extrabold text-zinc-400 uppercase tracking-widest">Capacity</span>
-                            <span className={`text-xs font-black ${isFull ? 'text-red-500' : 'text-zinc-600'}`}>{spotsTaken} / {MAX_DOGS_PER_BLOCK}</span>
-                         </div>
-                         <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-1000 ${isFull ? 'bg-red-400' : spotsTaken > 0 ? 'bg-indigo-500' : 'bg-zinc-200'}`}
-                              style={{ width: `${Math.max(ratio * 100, 5)}%` }}
-                            />
-                         </div>
-                      </div>
-                    </div>
-
-                    {/* Dog Avatars */}
-                    <div className="flex-1 flex flex-col justify-end w-full">
-                       {(pendingBookings.length > 0 || blockDogs.length > 0) ? (
-                         <div className="flex -space-x-3 items-center">
-                           {blockDogs.map((dog, i) => dog && (
-                             <div key={dog.id} className={`w-10 h-10 rounded-full border-[3px] border-white flex items-center justify-center text-white text-[12px] font-bold shadow-md z-[${10-i}] ${dog.avatarColor}`} title={`${dog.name} (Confirmed)`}>
-                               {dog.name.charAt(0)}
-                             </div>
-                           ))}
-                           {pendingBookings.map((booking, i) => {
-                              const dog = dogs.find(d => d.id === booking.dogId);
-                              if (!dog) return null;
-                              return (
-                                <div key={booking.id} className={`w-10 h-10 rounded-full border-[3px] border-amber-300 flex items-center justify-center text-white text-[12px] font-bold shadow-md opacity-80 backdrop-blur-sm z-[${10-(blockDogs.length+i)}] ${dog.avatarColor}`} title={`${dog.name} (Pending)`}>
-                                  {dog.name.charAt(0)}
-                                </div>
-                              )
-                           })}
-                         </div>
-                       ) : (
-                         <span className="text-sm font-bold text-zinc-400 group-hover:text-indigo-400 transition-colors">Completely Open</span>
-                       )}
-                    </div>
-                  </button>
-                )
-              })}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-
-      {/* Selection Drawer */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[85vh] bg-white rounded-t-[32px]">
-          <div className="max-w-md w-full mx-auto pb-4">
-            <DrawerHeader className="pt-8 pb-6 px-6 relative">
-              <div className="w-12 h-1.5 bg-zinc-200 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
-              <DrawerTitle className="text-3xl font-black tracking-tight text-zinc-900 mb-2">Book Walk</DrawerTitle>
-              <DrawerDescription className="text-base text-zinc-500 font-medium">
-                Request spot for <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg mx-1">{selectedSlot ? timeBlocks.find(b => b.id === selectedSlot.blockId)?.label : ''}</span> on <span className="font-bold text-zinc-800">{selectedSlot ? format(parseISO(selectedSlot.date), "EEEE") : ''}</span>. We'll let Mike know.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-6 py-2 flex flex-col gap-3 overflow-y-auto max-h-[50vh] custom-scrollbar">
-              {dogs.map(dog => {
-                 if (!selectedSlot) return null;
-                 const scheduleForSlot = schedules[selectedSlot.date] || { blocks: {} };
-                 const isAlreadyAdded = scheduleForSlot.blocks[selectedSlot.blockId]?.dogIds.includes(dog.id);
-                 
-                 const dailyBookingsForSlot = bookings.filter(b => b.date === selectedSlot.date);
-                 const isAlreadyPending = dailyBookingsForSlot.some(b => b.blockId === selectedSlot.blockId && b.dogId === dog.id && b.status === "pending");
-                 
-                 return (
-                   <button 
-                     key={dog.id} 
-                     disabled={isAlreadyAdded || isAlreadyPending}
-                     onClick={() => handleDogSelect(dog.id)}
-                     className={`group relative flex items-center space-x-4 p-4 rounded-[24px] border-2 transition-all select-none text-left w-full overflow-hidden
-                        ${isAlreadyAdded || isAlreadyPending ? 'border-zinc-100 bg-zinc-50 opacity-60 cursor-not-allowed' : 'border-zinc-200 hover:border-indigo-500 cursor-pointer active:scale-[0.98] shadow-sm hover:shadow-md bg-white'}`}
-                   >
-                     {!(isAlreadyAdded || isAlreadyPending) && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-                     )}
-                     
-                     <div className="flex items-center gap-4 flex-1">
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-extrabold text-xl shadow-md border-2 border-white/50 ${dog.avatarColor}`}>
-                          {dog.name.charAt(0)}
-                        </div>
-                        <div className="flex flex-col flex-1">
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-black text-lg text-zinc-900">{dog.name}</span>
-                            {isAlreadyAdded && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
-                            {isAlreadyPending && <CalendarClock className="w-4 h-4 text-amber-500 shrink-0" />}
-                          </div>
-                          <span className="text-[13px] text-zinc-500 font-semibold mt-0.5">
-                            {isAlreadyAdded ? "Already scheduled for this block" : isAlreadyPending ? "Awaiting confirmation from Mike" : `${dog.owner}'s dog`}
-                          </span>
-                        </div>
-                     </div>
-                   </button>
-                 )
-              })}
-            </div>
-            <DrawerFooter className="px-6 pt-6 pb-8">
-              <DrawerClose asChild>
-                <Button variant="ghost" className="h-14 font-bold text-zinc-500 rounded-2xl hover:bg-zinc-100 text-lg">Cancel</Button>
-              </DrawerClose>
-            </DrawerFooter>
+      <main className="flex-1 w-full">
+        {/* Hero Section */}
+        <section className="grid grid-cols-1 md:grid-cols-2 min-h-[60vh] md:min-h-[80vh]">
+          {/* Left Side: Image */}
+          <div className="relative min-h-[40vh] md:min-h-full">
+            <Image
+              src="/assets/dogwalker.png"
+              alt="Dog walker"
+              fill
+              className="object-cover"
+              unoptimized
+            />
           </div>
-        </DrawerContent>
-      </Drawer>
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 0px;
-          height: 0px;
-          background: transparent;
-        }
-      `}} />
+          {/* Right Side: Blue Banner */}
+          <div className="bg-primary text-white flex flex-col justify-center items-center text-center p-12 md:p-24">
+            <h1 className="text-4xl md:text-5xl font-serif font-normal leading-[1.3]">
+              Hi! I’m Mike,<br/>
+              an expert dog walker<br/>
+              based in downtown<br/>
+              Toronto
+            </h1>
+            <div className="mt-12">
+              <Link href="#contact">
+                <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary rounded-none px-10 py-6 text-xs tracking-widest uppercase transition-colors">
+                  CONTACT ME
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section id="about" className="py-24 bg-background text-center">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-xs font-sans tracking-[0.2em] uppercase mb-8">A LITTLE BIT ABOUT ME</h2>
+            <div className="w-12 h-px bg-primary/30 mx-auto mb-10" />
+            <p className="text-lg text-foreground/80 leading-relaxed font-serif">
+              I'm a paragraph. Click here to add your own text and edit me. It’s easy. Just click “Edit Text” or double click me to add your own content and make changes to the font. Feel free to drag and drop me anywhere you like on your page. I’m a great place for you to tell a story and let your users know a little more about you.
+            </p>
+          </div>
+        </section>
+
+        {/* Parallax Image Section */}
+        <section className="relative w-full h-[60vh] bg-fixed bg-center bg-cover" style={{ backgroundImage: "url('/assets/dogs_layer.png')" }}>
+        </section>
+
+        {/* Services & Fees */}
+        <section id="services" className="py-24 bg-background">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-xs font-sans tracking-[0.2em] uppercase mb-8">SERVICES AND FEES</h2>
+              <div className="w-12 h-px bg-primary/30 mx-auto" />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { title: "DOG WALKING", price: "30 mins $21.00 | 60 mins $36.00" },
+                { title: "PUPPY CARE", price: "30 mins $21.00 | 60 mins $36.00" },
+                { title: "VACATION PET SITTING", price: "30 mins $21.00 | 60 mins $36.00" }
+              ].map((service, i) => (
+                <div key={i} className="bg-background p-10 text-center border border-primary/20">
+                  <h6 className="text-xs font-sans tracking-[0.1em] uppercase text-foreground mb-6">{service.title}</h6>
+                  <p className="text-foreground/80 mb-8 font-serif leading-relaxed text-[15px]">
+                    I'm a paragraph. Click here to add your own text and edit me. It’s easy. Just click “Edit Text” or double click me to add your own content and make changes to the font. I’m a great place for you to tell a story and let your users know a little more about you.
+                  </p>
+                  <p className="text-primary text-[15px]">{service.price}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Happy Clients Banner */}
+        <section className="bg-primary text-white py-16 text-center">
+          <h2 className="text-xs font-sans tracking-[0.2em] uppercase">SOME HAPPY CLIENTS</h2>
+        </section>
+
+        {/* Happy Clients Grid */}
+        <section id="clients" className="w-full bg-background">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+             {[
+               { id: 1, name: "Charlie", color: "#c5a880", img: "/assets/charlie.jpg" },
+               { id: 2, name: "Luke", color: "#f5a623", img: "/assets/luke.jpg" },
+               { id: 3, name: "Mikey", color: "#4a90e2", img: "/assets/mikey.jpg" },
+               { id: 4, name: "Spot", color: "#e4a7b7", img: "/assets/spot.jpg" }
+             ].map((dog) => (
+               <div key={dog.id} className="aspect-square relative group overflow-hidden bg-white">
+                 <Image 
+                   src={dog.img} 
+                   alt={`${dog.name} the happy client`} 
+                   fill 
+                   className="object-cover" 
+                   unoptimized
+                 />
+                 {/* Hover Overlay */}
+                 <div 
+                   className="absolute inset-0 flex flex-col justify-center items-center text-center p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                   style={{ backgroundColor: dog.color }}
+                 >
+                   <h3 className="text-white font-serif text-2xl mb-4">{dog.name}</h3>
+                   <p className="text-white font-serif text-sm leading-relaxed">
+                     "I'm a testimonial. Click to edit me and add text that says something nice about you and your services. Let your customers review you and tell their friends how great you are."
+                   </p>
+                 </div>
+               </div>
+             ))}
+          </div>
+        </section>
+
+        {/* Contact Split Section */}
+        <section id="contact" className="grid grid-cols-1 md:grid-cols-2 min-h-[70vh]">
+          {/* Left Side: Contact Image */}
+          <div className="relative min-h-[40vh] md:min-h-full">
+             <Image 
+               src="/assets/bottomdog.png" 
+               alt="Dogs on a path" 
+               fill 
+               className="object-cover" 
+               unoptimized
+             />
+          </div>
+          {/* Right Side: Contact Info and Form */}
+          <div className="bg-white p-12 md:p-24 flex flex-col items-center justify-center text-center border-t border-border md:border-t-0">
+            <h2 className="text-xs font-sans tracking-[0.2em] uppercase mb-8">CONTACT ME</h2>
+            <div className="flex gap-4 justify-center mb-8">
+              {['f', 't', 'in', 'ig'].map(icon => (
+                <div key={icon} className="w-8 h-8 rounded-full bg-foreground flex items-center justify-center text-white text-xs font-sans uppercase">
+                  {icon}
+                </div>
+              ))}
+            </div>
+            <div className="mb-12 font-serif text-lg text-foreground/80">
+              <p>1-800-000-0000</p>
+              <p>info@mysite.com</p>
+            </div>
+            
+            {/* Simple Form Layout */}
+            <form className="w-full max-w-md space-y-6 text-left" onSubmit={(e) => e.preventDefault()}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="text-[11px] uppercase tracking-wider text-foreground/60 block">First name *</label>
+                  <input id="firstName" type="text" className="w-full border-b border-border bg-transparent pb-2 focus:outline-none focus:border-primary transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="text-[11px] uppercase tracking-wider text-foreground/60 block">Last name *</label>
+                  <input id="lastName" type="text" className="w-full border-b border-border bg-transparent pb-2 focus:outline-none focus:border-primary transition-colors" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-[11px] uppercase tracking-wider text-foreground/60 block">Email *</label>
+                <input id="email" type="email" className="w-full border-b border-border bg-transparent pb-2 focus:outline-none focus:border-primary transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="message" className="text-[11px] uppercase tracking-wider text-foreground/60 block">Message *</label>
+                <textarea id="message" className="w-full border-b border-border bg-transparent pb-2 focus:outline-none focus:border-primary transition-colors resize-none h-10"></textarea>
+              </div>
+              <div className="flex justify-end pt-4">
+                <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-none px-8 font-sans">Let's Chat!</Button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <footer className="py-8 bg-background border-t border-border text-center text-sm font-bold text-foreground/60">
+        <p>© 2035 by Mike Loves Dogs.</p>
+      </footer>
     </div>
   );
 }

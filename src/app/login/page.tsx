@@ -34,7 +34,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
       <Card className="w-full max-w-sm shadow-lg border-muted">
         <CardHeader className="space-y-1 pb-4">
-          <CardTitle className="text-2xl font-bold tracking-tight text-center">Admin Access</CardTitle>
+          <CardTitle className="text-2xl font-serif font-bold tracking-tight text-primary text-center">Admin Access</CardTitle>
           <CardDescription className="text-center text-sm">
             Sign in to manage the walk schedule.
           </CardDescription>
@@ -82,7 +82,7 @@ export default function LoginPage() {
             </Button>
             
             <Button type="button" variant="ghost" className="w-full text-xs" onClick={() => router.push('/')}>
-               Return to Public Schedule
+               Return to Website
             </Button>
           </form>
         </CardContent>
