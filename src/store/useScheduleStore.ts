@@ -127,7 +127,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
   },
 
   requestBooking: async (date, blockId, dogId) => {
-    await addDoc(collection(db, 'bookings'), {
+    const docRef = await addDoc(collection(db, 'bookings'), {
       date,
       blockId,
       dogId,
@@ -142,7 +142,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       fetch('/api/notify-mike', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dogName: dog.name, ownerName: dog.owner, blockLabel, date })
+        body: JSON.stringify({ dogName: dog.name, ownerName: dog.owner, blockLabel, date, bookingId: docRef.id })
       }).catch(err => console.error("Webhook failed:", err));
     }
   },

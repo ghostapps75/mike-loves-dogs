@@ -17,6 +17,7 @@ export default function ClientView() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, blockId: string} | null>(null);
+  const [confirmDogId, setConfirmDogId] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,12 +29,23 @@ export default function ClientView() {
   if (!mounted) return <div className="min-h-screen bg-[#FDFDFD]"></div>;
 
   const handleDogSelect = (dogId: string) => {
-    if (selectedSlot) {
-      requestBooking(selectedSlot.date, selectedSlot.blockId, dogId);
+    setConfirmDogId(dogId);
+  };
+
+  const confirmBooking = () => {
+    if (selectedSlot && confirmDogId) {
+      requestBooking(selectedSlot.date, selectedSlot.blockId, confirmDogId);
       setIsDrawerOpen(false);
       setSelectedSlot(null);
+      setConfirmDogId(null);
     }
   };
+
+  const cancelBooking = () => {
+    setConfirmDogId(null);
+  };
+
+  const dogToConfirm = confirmDogId ? dogs.find(d => d.id === confirmDogId) : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans w-full">
@@ -171,10 +183,41 @@ export default function ClientView() {
       </div>
 
       {/* Selection Drawer */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <Drawer open={isDrawerOpen} onOpenChange={(open) => {
+        setIsDrawerOpen(open);
+        if (!open) setConfirmDogId(null);
+      }}>
         <DrawerContent className="max-h-[85vh] bg-white rounded-t-[32px]">
           <div className="max-w-md w-full mx-auto pb-4">
-            <DrawerHeader className="pt-8 pb-6 px-6 relative">
+            {confirmDogId && dogToConfirm ? (
+              <div className="p-8 text-center animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white font-extrabold text-3xl shadow-md border-4 border-white/50 mb-6 ${dogToConfirm.avatarColor}`}>
+                  {dogToConfirm.name.charAt(0)}
+                </div>
+                <h3 className="text-2xl font-serif font-bold text-primary mb-3">Confirm Request</h3>
+                <p className="text-base text-zinc-500 font-medium leading-relaxed mb-8">
+                  Are you sure you want to send a notification for <strong className="text-zinc-900">{dogToConfirm.name}</strong>?
+                </p>
+                <div className="flex gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 rounded-2xl h-14 font-bold text-zinc-600 hover:bg-zinc-100 border-zinc-200 text-lg"
+                    onClick={cancelBooking}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    className="flex-1 rounded-2xl h-14 font-bold bg-primary hover:bg-primary/90 text-white shadow-md text-lg"
+                    onClick={confirmBooking}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <DrawerHeader className="pt-8 pb-6 px-6 relative">
               <div className="w-12 h-1.5 bg-zinc-200 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
               <DrawerTitle className="text-3xl font-serif font-bold tracking-tight text-primary mb-2">Book Walk</DrawerTitle>
               <DrawerDescription className="text-base text-zinc-500 font-medium">
@@ -226,9 +269,12 @@ export default function ClientView() {
                 <Button variant="ghost" className="h-14 font-bold text-zinc-500 rounded-2xl hover:bg-zinc-100 text-lg">Cancel</Button>
               </DrawerClose>
             </DrawerFooter>
+              </>
+            )}
           </div>
         </DrawerContent>
       </Drawer>
+
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 0px;

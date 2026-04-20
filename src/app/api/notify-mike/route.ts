@@ -11,15 +11,19 @@ const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export async function POST(request: Request) {
   try {
-    const { dogName, ownerName, blockLabel, date } = await request.json();
+    const { dogName, ownerName, blockLabel, date, bookingId } = await request.json();
 
     if (!client || !twilioNumber || !adminNumber) {
-      console.log('Twilio is technically disabled due to missing Environment Variables', { dogName, ownerName, blockLabel });
+      console.log('Twilio is technically disabled due to missing Environment Variables', { dogName, ownerName, blockLabel, bookingId });
       return NextResponse.json({ success: true, warning: 'Simulated mode: Missing Twilio keys' });
     }
 
+    const host = request.headers.get('host') || 'mike-loves-dogs.netlify.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+
     const message = await client.messages.create({
-      body: `🐶 New Request: ${ownerName} just requested the [${blockLabel}] spot for ${dogName} on ${date}.`,
+      body: `🐶 New Request: ${ownerName} just requested the [${blockLabel}] spot for ${dogName} on ${date}.\n\nReview here: ${baseUrl}/review?id=${bookingId}`,
       from: twilioNumber,
       to: adminNumber,
     });
