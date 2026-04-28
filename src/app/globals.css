@@ -129,3 +129,18 @@
     @apply font-serif font-normal;
   }
 }
+
+/* Parallax section: fixed background on desktop, scroll on iOS/touch devices.
+   background-attachment: fixed is unsupported on iOS Safari, so we fall back
+   to scroll (which shows the full image properly) on any touch/hover-none device. */
+.parallax-section {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+@media (hover: none) {
+  .parallax-section {
+    background-attachment: scroll;
+  }
+}
