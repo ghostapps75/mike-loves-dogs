@@ -110,10 +110,10 @@ export default function MarketingPage() {
         <section id="clients" className="w-full bg-background">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
              {[
-               { id: 1, name: "Charlie", color: "#c5a880", img: "/assets/charlie.jpg" },
-               { id: 2, name: "Luke", color: "#f5a623", img: "/assets/luke.jpg" },
-               { id: 3, name: "Mikey", color: "#4a90e2", img: "/assets/mikey.jpg" },
-               { id: 4, name: "Spot", color: "#e4a7b7", img: "/assets/spot.jpg" }
+               { id: 1, name: "Charlie", colorClass: "dog-overlay-charlie", img: "/assets/charlie.jpg" },
+               { id: 2, name: "Luke",    colorClass: "dog-overlay-luke",    img: "/assets/luke.jpg" },
+               { id: 3, name: "Mikey",   colorClass: "dog-overlay-mikey",   img: "/assets/mikey.jpg" },
+               { id: 4, name: "Spot",    colorClass: "dog-overlay-spot",    img: "/assets/spot.jpg" }
              ].map((dog) => (
                <div key={dog.id} className="aspect-square relative group overflow-hidden bg-white">
                  <Image 
@@ -123,11 +123,9 @@ export default function MarketingPage() {
                    className="object-cover" 
                    unoptimized
                  />
-                 {/* Hover Overlay — backgroundColor is dynamic per-dog data, inline style is required */}
-                 {/* eslint-disable-next-line react/forbid-component-props */}
+                 {/* Hover Overlay */}
                  <div 
-                   className="absolute inset-0 flex flex-col justify-center items-center text-center p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                   style={{ backgroundColor: dog.color }}
+                   className={`absolute inset-0 flex flex-col justify-center items-center text-center p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${dog.colorClass}`}
                  >
                    <h3 className="text-white font-serif text-2xl mb-4">{dog.name}</h3>
                    <p className="text-white font-serif text-sm leading-relaxed">
