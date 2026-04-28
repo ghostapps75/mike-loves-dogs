@@ -1,9 +1,31 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function MarketingPage() {
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const parallaxImgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = parallaxRef.current;
+    const img = parallaxImgRef.current;
+    if (!section || !img) return;
+
+    const handleScroll = () => {
+      const rect = section.getBoundingClientRect();
+      // How far the centre of the section is from the viewport centre
+      const relativePos = rect.top + rect.height / 2 - window.innerHeight / 2;
+      // Move the image at ~40% of the scroll speed for a subtle parallax
+      img.style.transform = `translateY(${relativePos * 0.25}px)`;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // seed initial position
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-background w-full">
       {/* Navigation */}
@@ -73,7 +95,24 @@ export default function MarketingPage() {
         </section>
 
         {/* Parallax Image Section */}
-        <section className="relative w-full h-[60vh] bg-fixed bg-center bg-cover" style={{ backgroundImage: "url('/assets/dogs_layer.png')" }}>
+        <section
+          ref={parallaxRef}
+          className="relative w-full h-[60vh] overflow-hidden"
+          aria-hidden="true"
+        >
+          <div
+            ref={parallaxImgRef}
+            className="absolute inset-x-0"
+            style={{ top: "-20%", bottom: "-20%" }}
+          >
+            <Image
+              src="/assets/dogs_layer.png"
+              alt="Dogs playing in the park"
+              fill
+              className="object-cover object-center"
+              unoptimized
+            />
+          </div>
         </section>
 
         {/* Services & Fees */}
