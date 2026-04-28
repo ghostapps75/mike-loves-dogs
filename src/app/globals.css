@@ -134,6 +134,7 @@
    background-attachment: fixed is unsupported on iOS Safari, so we fall back
    to scroll (which shows the full image properly) on any touch/hover-none device. */
 .parallax-section {
+  background-image: url('/assets/dogs_layer.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

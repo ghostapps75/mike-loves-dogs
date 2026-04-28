@@ -73,10 +73,7 @@ export default function MarketingPage() {
         </section>
 
         {/* Parallax Image Section â€” fixed on desktop, scroll on iOS/touch */}
-        <section
-          className="parallax-section w-full h-[60vh]"
-          style={{ backgroundImage: "url('/assets/dogs_layer.png')" }}
-        />
+        <section className="parallax-section w-full h-[60vh]" />
 
         {/* Services & Fees */}
         <section id="services" className="py-24 bg-background">
@@ -126,7 +123,8 @@ export default function MarketingPage() {
                    className="object-cover" 
                    unoptimized
                  />
-                 {/* Hover Overlay */}
+                 {/* Hover Overlay — backgroundColor is dynamic per-dog data, inline style is required */}
+                 {/* eslint-disable-next-line react/forbid-component-props */}
                  <div 
                    className="absolute inset-0 flex flex-col justify-center items-center text-center p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                    style={{ backgroundColor: dog.color }}
